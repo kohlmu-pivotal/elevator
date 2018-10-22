@@ -1,0 +1,15 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+group 'com.example.state'
+version '1.0-SNAPSHOT'
+
+repositories {
+    maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
