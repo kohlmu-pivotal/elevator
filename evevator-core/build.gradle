@@ -15,7 +15,8 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    implementation(project(":state-system"))
+    api(project(":state-system"))
+    implementation(project(":elevator-statemachine"))
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 }
 

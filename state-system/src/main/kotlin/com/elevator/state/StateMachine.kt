@@ -1,7 +1,8 @@
-package com.example.elevator.state
+package com.elevator.state
 
 
-class StateMachine(private val name: String, private val states: Map<String, State>,
+open class StateMachine(
+    private val name: String, private val states: Map<String, State>,
                    private val transitions: Map<Event, Transition>, private val initialState: State
 ) {
     private var currentState: State = initialState
