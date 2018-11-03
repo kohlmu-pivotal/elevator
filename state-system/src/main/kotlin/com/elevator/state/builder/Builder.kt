@@ -5,6 +5,5 @@ annotation class StateMachineDSL
 
 @StateMachineDSL
 interface Builder {
-    fun compile(): Any
-    fun compile(parent: Any): Any
+    fun build(compile: Boolean = true): Any = Unit
 }

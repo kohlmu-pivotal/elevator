@@ -1,19 +1,24 @@
 package com.elevator.state.builder
 
 import com.elevator.state.Event
+import com.elevator.state.State
+import com.elevator.state.StateMachine
+import com.elevator.state.Transition
 import com.elevator.state.graph.Graph
 import com.elevator.state.graph.Node
 
 abstract class StateMachineBuilder : Builder {
     lateinit var name: String
     lateinit var initialState: String
-    val states: MutableSet<StateBuilder> = mutableSetOf()
+    val states: MutableMap<String, StateBuilder> = mutableMapOf()
     val transitions: MutableMap<Event, TransitionBuilder> = mutableMapOf()
 
-    override fun compile(): Graph {
+    private lateinit var graph: Graph
+
+    fun compile(): Graph {
         validateLateInitVars()
-        return Graph(name).also { graph ->
-            states.forEach { state -> graph.addNodes(state.compile(graph) as Node) }
+        graph = Graph(name).also { graph ->
+            states.forEach { _, state -> graph.addNodes(state.compile(graph) as Node) }
             transitions.forEach { (_, transitionBuilder) ->
                 transitionBuilder.fromStates.forEach { fromState ->
                     val fromNode: Node = graph.nodes[fromState]!!
@@ -23,9 +28,19 @@ abstract class StateMachineBuilder : Builder {
             }
             graph.nodes[initialState]!!.also { it.initialNode = true }
         }
+        return graph
     }
 
-    override fun compile(parent: Any): Any = compile()
+    fun compile(parent: Any): Any = compile()
+
+    override fun build(compile: Boolean): Any {
+        graph.nodes.forEach { _, node ->
+            val stateBuilder = states[node.name]!!
+            node.edges.forEach { event, edge -> Transition() }
+            State(node.name, stateBuilder.onEnter, stateBuilder.onExit, node.e)
+        }
+        StateMachine(name,)
+    }
 
     protected open fun validateLateInitVars() {
         if (!this::name.isInitialized) {
@@ -39,7 +54,7 @@ abstract class StateMachineBuilder : Builder {
     fun state(builder: StateBuilder.SimpleStateBuilder.() -> Unit) =
         StateBuilder.SimpleStateBuilder().also {
             it.apply(builder)
-            this.states.add(it)
+            this.states[it.name] = it
         }
 
     fun transition(builder: TransitionBuilder.() -> Unit) =

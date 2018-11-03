@@ -8,7 +8,7 @@ data class Graph(val name: String) {
 }
 
 data class Node(val name: String) {
-    private val edges: MutableMap<String, Edge> = mutableMapOf()
+    val edges: MutableMap<String, Edge> = mutableMapOf()
     var initialNode: Boolean = false
 
     fun addEdge(edge: Edge) {

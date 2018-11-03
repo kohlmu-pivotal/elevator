@@ -2,7 +2,7 @@ package com.elevator.state.core
 
 import com.elevator.state.ElevatorStateMachine.ElevatorEvents
 import com.elevator.state.ElevatorStateMachine.ElevatorState
-import com.elevator.state.dsl.elevator
+import com.elevator.state.builder.elevator
 
 class Elevator(val elevatorIdentifier: String) {
 
@@ -27,7 +27,6 @@ class Elevator(val elevatorIdentifier: String) {
             state {
                 name = ElevatorState.STOPPED.name
                 onEnter = { println("Stopping at floor") }
-                onExit = { }
             }
             state {
                 name = ElevatorState.POWER_SAVING.name

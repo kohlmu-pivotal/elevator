@@ -2,7 +2,7 @@ package com.elevator.state.core
 
 import com.elevator.state.ElevatorDoorsStateMachine.ElevatorDoorEvent
 import com.elevator.state.ElevatorDoorsStateMachine.ElevatorDoorState
-import com.elevator.state.dsl.elevatorDoors
+import com.elevator.state.builder.elevatorDoors
 
 class ElevatorDoors(private val elevator: Elevator) {
     private val statemachine = initializeStateMachine(this)

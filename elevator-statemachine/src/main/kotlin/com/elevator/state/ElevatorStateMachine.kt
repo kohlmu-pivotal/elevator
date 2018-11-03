@@ -1,8 +1,7 @@
 package com.elevator.state
 
-class ElevatorStateMachine(
-    name: String, states: Map<String, State>, transitions: Map<Event, Transition>, initialState: State
-) : StateMachine(name, states, transitions, initialState) {
+class ElevatorStateMachine(name: String, states: Map<String, State>, initialState: State) :
+    StateMachine(name, states, initialState) {
 
     enum class ElevatorState(name: String) {
         ON("On"),

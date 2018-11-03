@@ -11,9 +11,10 @@ class State(
 
     override fun equals(other: Any?) = other is State && other.name == name
 
-    fun processEvent(context: StateProcessContext) {
+    fun processEvent(context: StateProcessContext): StateProcessContext {
         availableActions[context.event]?.invoke()
             ?: throw IllegalArgumentException("event ${context.event} is not supported by state $name")
+        return context.copy(event = context.event, contextParameters = context.contextParameters)
     }
 }
 

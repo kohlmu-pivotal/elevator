@@ -26,9 +26,6 @@ sealed class StateBuilder : Builder {
             return Node(name)
         }
 
-        override fun compile(parent: Any): Node {
-            validateLateInitVars()
-            return Node(name)
-        }
+        override fun compile(parent: Any): Any = compile() as Node
     }
 }
