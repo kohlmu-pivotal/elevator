@@ -4,7 +4,7 @@ package com.elevator.state.builder
 class TransitionBuilder : Builder {
     lateinit var fromStates: List<String>
     lateinit var toState: String
-    lateinit var event: String
+    lateinit var event: Any
     lateinit var handler: () -> Unit
 
     override fun validate() {

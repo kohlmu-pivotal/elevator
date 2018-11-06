@@ -27,25 +27,25 @@ class ElevatorDoors(private val elevator: Elevator) {
                 onExit = { println("Opening doors") }
             }
             transition {
-                event = ElevatorDoorEvent.OPEN_EVENT.name
+                event = ElevatorDoorEvent.OPEN_EVENT
                 fromStates = listOf(ElevatorDoorState.CLOSED.name)
                 toState = ElevatorDoorState.OPEN.name
                 handler = { elevatorDoors.open() }
             }
             transition {
-                event = ElevatorDoorEvent.FIXED_EVENT.name
+                event = ElevatorDoorEvent.FIXED_EVENT
                 fromStates = listOf(ElevatorDoorState.JAMMED.name)
                 toState = ElevatorDoorState.OPEN.name
                 handler = { elevatorDoors.fixJam() }
             }
             transition {
-                event = ElevatorDoorEvent.CLOSE_EVENT.name
+                event = ElevatorDoorEvent.CLOSE_EVENT
                 fromStates = listOf(ElevatorDoorState.OPEN.name)
                 toState = ElevatorDoorState.CLOSED.name
                 handler = { elevatorDoors.close() }
             }
             transition {
-                event = ElevatorDoorEvent.JAMMED_EVENT.name
+                event = ElevatorDoorEvent.JAMMED_EVENT
                 fromStates = listOf(ElevatorDoorState.OPEN.name, ElevatorDoorState.CLOSED.name)
                 toState = ElevatorDoorState.JAMMED.name
                 handler = { elevatorDoors.jammed() }

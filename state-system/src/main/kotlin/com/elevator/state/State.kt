@@ -11,10 +11,14 @@ data class State(
 
     override fun equals(other: Any?) = other is State && other.name == name
 
-    fun processEvent(context: StateProcessContext): StateProcessContext {
-        availableActions[context.event]?.handler?.invoke()
+    fun processEvent(context: StateProcessContext): Pair<StateProcessContext, State> {
+        val transition = availableActions[context.event]
+        transition?.handler?.invoke()
             ?: throw IllegalArgumentException("event ${context.event} is not supported by state $name")
-        return context.copy(event = context.event, contextParameters = context.contextParameters)
+        return Pair(
+            context.copy(event = context.event, contextParameters = context.contextParameters),
+            transition.toState
+        )
     }
 }
 

@@ -21,6 +21,8 @@ open class StateMachine(
     }
 
     fun processEvent(stateProcessContext: StateProcessContext): StateProcessContext {
-        return currentState.processEvent(context = stateProcessContext)
+        val (processContext, nextState) = currentState.processEvent(context = stateProcessContext)
+        currentState = nextState
+        return processContext
     }
 }

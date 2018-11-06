@@ -1,6 +1,7 @@
 package com.elevator.state.builder
 
 import com.elevator.state.Event
+import com.elevator.state.StateMachine
 import com.elevator.state.transformers.BuilderToIRModelTransformer
 import com.elevator.state.transformers.IRModelToStateMachineTransformer
 import com.elevator.state.transformers.Transformer
@@ -16,8 +17,8 @@ abstract class StateMachineBuilder : Builder {
         IRModelToStateMachineTransformer() as Transformer<Any, Any>
     )
 
-    override fun build(): Any {
-        return transform(this)
+    override fun build(): StateMachine {
+        return transform(this) as StateMachine
     }
 
     private tailrec fun transform(input: Any, index: Int = 0): Any =

@@ -17,7 +17,7 @@ class IRModelToStateMachineTransformer : Transformer<IRModel, Any> {
     }
 
     private fun transformEdge(input: Edge, toState: State): Transition =
-        Transition(toState, Event(input.event), input.sideEffect)
+        Transition(toState, input.event, input.sideEffect)
 
     private fun transformNode(input: Node, statesMap: MutableMap<String, State>): Pair<State, Boolean> {
         val inputState = State(input.name, input.onEnter, input.onExit, emptyMap())

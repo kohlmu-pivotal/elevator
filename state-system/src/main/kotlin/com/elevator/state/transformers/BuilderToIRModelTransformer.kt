@@ -1,5 +1,6 @@
 package com.elevator.state.transformers
 
+import com.elevator.state.Event
 import com.elevator.state.builder.Builder
 import com.elevator.state.builder.StateBuilder
 import com.elevator.state.builder.StateMachineBuilder
@@ -13,10 +14,7 @@ class BuilderToIRModelTransformer : Transformer<Builder, IRModel> {
         input.validate()
         return when (input) {
             is StateMachineBuilder -> transformStateMachineBuilder(input)
-            is StateBuilder -> {
-                println(input.name)
-                return transformStateBuilder(input)
-            }
+            is StateBuilder -> transformStateBuilder(input)
             is TransitionBuilder -> transformTransitionBuilder(input)
             else -> throw IllegalArgumentException("No transformer defined for ${input::class.java}")
         }
@@ -40,7 +38,7 @@ class BuilderToIRModelTransformer : Transformer<Builder, IRModel> {
 
     private fun transformStateBuilder(input: StateBuilder): Node = Node(input.name, input.onEnter, input.onExit)
 
-    private fun transformTransitionBuilder(input: TransitionBuilder): Edge = Edge(input.event, input.handler)
+    private fun transformTransitionBuilder(input: TransitionBuilder): Edge = Edge(Event(input.event), input.handler)
 }
 
 
