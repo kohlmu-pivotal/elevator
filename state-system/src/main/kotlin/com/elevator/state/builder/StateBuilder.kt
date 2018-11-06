@@ -6,7 +6,7 @@ class StateBuilder : Builder {
     lateinit var onEnter: () -> Unit
     lateinit var onExit: () -> Unit
 
-    protected open fun validateLateInitVars() {
+    override fun validate() {
         if (!this::name.isInitialized) {
             throw IllegalArgumentException("State does not contain valid name")
         }

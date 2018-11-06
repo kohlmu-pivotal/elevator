@@ -6,4 +6,5 @@ annotation class StateMachineDSL
 @StateMachineDSL
 interface Builder {
     fun build(): Any = Unit
+    fun validate()
 }

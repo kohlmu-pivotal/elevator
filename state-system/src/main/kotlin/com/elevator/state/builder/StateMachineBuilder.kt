@@ -17,7 +17,6 @@ abstract class StateMachineBuilder : Builder {
     )
 
     override fun build(): Any {
-        validateLateInitVars()
         return transform(this)
     }
 
@@ -29,7 +28,7 @@ abstract class StateMachineBuilder : Builder {
             input
         }
 
-    protected open fun validateLateInitVars() {
+    override fun validate() {
         if (!this::name.isInitialized) {
             throw IllegalArgumentException("StateMachine does not contain valid name")
         }

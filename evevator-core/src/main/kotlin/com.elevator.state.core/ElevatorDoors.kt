@@ -50,7 +50,7 @@ class ElevatorDoors(private val elevator: Elevator) {
                 toState = ElevatorDoorState.JAMMED.name
                 handler = { elevatorDoors.jammed() }
             }
-        }.compile()
+        }.build()
 
     private fun close() {}
     private fun open() {}

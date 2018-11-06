@@ -10,9 +10,13 @@ import com.elevator.state.graph.Node
 
 class BuilderToIRModelTransformer : Transformer<Builder, IRModel> {
     override fun transform(input: Builder): IRModel {
+        input.validate()
         return when (input) {
             is StateMachineBuilder -> transformStateMachineBuilder(input)
-            is StateBuilder -> transformStateBuilder(input)
+            is StateBuilder -> {
+                println(input.name)
+                return transformStateBuilder(input)
+            }
             is TransitionBuilder -> transformTransitionBuilder(input)
             else -> throw IllegalArgumentException("No transformer defined for ${input::class.java}")
         }

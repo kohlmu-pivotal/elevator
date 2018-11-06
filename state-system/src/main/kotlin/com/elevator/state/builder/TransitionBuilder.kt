@@ -7,7 +7,7 @@ class TransitionBuilder : Builder {
     lateinit var event: String
     lateinit var handler: () -> Unit
 
-    private fun validateVars() {
+    override fun validate() {
         if (!this::fromStates.isInitialized) {
             throw IllegalArgumentException("No fromState defined for transition}")
         }

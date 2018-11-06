@@ -45,7 +45,7 @@ class Elevator(val elevatorIdentifier: String) {
                 handler = { elevator.floorSelected() }
             }
             transition {
-                fromStates = listOf(ElevatorState.ON.name)
+                fromStates = listOf(ElevatorState.ON.name, ElevatorState.MOVING.name)
                 toState = ElevatorState.STOPPED.name
                 event = ElevatorEvents.WAITING.name
                 handler = { elevator.waitForFloorSelection() }
@@ -69,12 +69,17 @@ class Elevator(val elevatorIdentifier: String) {
                 handler = { elevator.turnOn() }
             }
             transition {
-                fromStates = listOf(ElevatorState.ON.name, ElevatorState.POWER_SAVING.name, ElevatorState.STOPPED.name)
+                fromStates = listOf(
+                    ElevatorState.ON.name,
+                    ElevatorState.POWER_SAVING.name,
+                    ElevatorState.STOPPED.name,
+                    ElevatorState.MOVING.name
+                )
                 toState = ElevatorState.STOPPED.name
                 event = ElevatorEvents.EMERGENCY_STOP.name
                 handler = { elevator.emergencyStop() }
             }
-        }.compile()
+        }.build()
 
     private fun floorSelected() {}
     private fun turnOff() {}
