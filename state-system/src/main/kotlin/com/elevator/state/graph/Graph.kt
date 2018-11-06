@@ -1,13 +1,15 @@
 package com.elevator.state.graph
 
-data class Graph(val name: String) {
+import com.elevator.state.transformers.IRModel
+
+data class Graph(val name: String) : IRModel {
     val nodes: MutableMap<String, Node> = mutableMapOf()
     fun addNodes(node: Node) {
         nodes[node.name] = node
     }
 }
 
-data class Node(val name: String) {
+data class Node(val name: String, val onEnter: () -> Unit, val onExit: () -> Unit) : IRModel {
     val edges: MutableMap<String, Edge> = mutableMapOf()
     var initialNode: Boolean = false
 
@@ -16,4 +18,10 @@ data class Node(val name: String) {
     }
 }
 
-data class Edge(val event: String, val toNode: Node, val sideEffect: () -> Unit)
+data class Edge(val event: String, val sideEffect: () -> Unit) : IRModel {
+    lateinit var toNode: Node
+
+    fun addToNode(toNode: Node) {
+        this.toNode = toNode
+    }
+}

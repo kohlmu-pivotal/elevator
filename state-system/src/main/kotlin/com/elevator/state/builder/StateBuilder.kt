@@ -1,9 +1,7 @@
 package com.elevator.state.builder
 
-import com.elevator.state.graph.Node
 
-
-sealed class StateBuilder : Builder {
+class StateBuilder : Builder {
     lateinit var name: String
     lateinit var onEnter: () -> Unit
     lateinit var onExit: () -> Unit
@@ -18,14 +16,5 @@ sealed class StateBuilder : Builder {
         if (!this::onExit.isInitialized) {
             onExit = {}
         }
-    }
-
-    class SimpleStateBuilder : StateBuilder() {
-        override fun compile(): Any {
-            validateLateInitVars()
-            return Node(name)
-        }
-
-        override fun compile(parent: Any): Any = compile() as Node
     }
 }

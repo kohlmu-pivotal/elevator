@@ -1,11 +1,9 @@
 package com.elevator.state.builder
 
 import com.elevator.state.Event
-import com.elevator.state.State
-import com.elevator.state.StateMachine
-import com.elevator.state.Transition
-import com.elevator.state.graph.Graph
-import com.elevator.state.graph.Node
+import com.elevator.state.transformers.BuilderToIRModelTransformer
+import com.elevator.state.transformers.IRModelToStateMachineTransformer
+import com.elevator.state.transformers.Transformer
 
 abstract class StateMachineBuilder : Builder {
     lateinit var name: String
@@ -13,34 +11,23 @@ abstract class StateMachineBuilder : Builder {
     val states: MutableMap<String, StateBuilder> = mutableMapOf()
     val transitions: MutableMap<Event, TransitionBuilder> = mutableMapOf()
 
-    private lateinit var graph: Graph
+    private val transformers = listOf(
+        BuilderToIRModelTransformer() as Transformer<Any, Any>,
+        IRModelToStateMachineTransformer() as Transformer<Any, Any>
+    )
 
-    fun compile(): Graph {
+    override fun build(): Any {
         validateLateInitVars()
-        graph = Graph(name).also { graph ->
-            states.forEach { _, state -> graph.addNodes(state.compile(graph) as Node) }
-            transitions.forEach { (_, transitionBuilder) ->
-                transitionBuilder.fromStates.forEach { fromState ->
-                    val fromNode: Node = graph.nodes[fromState]!!
-                    val toNode: Node = graph.nodes[transitionBuilder.toState]!!
-                    fromNode.addEdge(transitionBuilder.compile(toNode))
-                }
-            }
-            graph.nodes[initialState]!!.also { it.initialNode = true }
-        }
-        return graph
+        return transform(this)
     }
 
-    fun compile(parent: Any): Any = compile()
-
-    override fun build(compile: Boolean): Any {
-        graph.nodes.forEach { _, node ->
-            val stateBuilder = states[node.name]!!
-            node.edges.forEach { event, edge -> Transition() }
-            State(node.name, stateBuilder.onEnter, stateBuilder.onExit, node.e)
+    private tailrec fun transform(input: Any, index: Int = 0): Any =
+        if (index < transformers.size) {
+            val result = transformers[index].transform(input)
+            transform(result, (index + 1))
+        } else {
+            input
         }
-        StateMachine(name,)
-    }
 
     protected open fun validateLateInitVars() {
         if (!this::name.isInitialized) {
@@ -51,8 +38,8 @@ abstract class StateMachineBuilder : Builder {
         }
     }
 
-    fun state(builder: StateBuilder.SimpleStateBuilder.() -> Unit) =
-        StateBuilder.SimpleStateBuilder().also {
+    fun state(builder: StateBuilder.() -> Unit) =
+        StateBuilder().also {
             it.apply(builder)
             this.states[it.name] = it
         }
