@@ -1,7 +1,5 @@
 package com.elevator.state.core
 
-import com.elevator.state.ElevatorStateMachine.ElevatorEvents
-import com.elevator.state.ElevatorStateMachine.ElevatorState
 import com.elevator.state.Event
 import com.elevator.state.StateMachine
 import com.elevator.state.StateProcessContext
@@ -16,7 +14,7 @@ class Elevator(val elevatorIdentifier: String) {
     private fun initializeElevatorStateMachine(elevator: Elevator): StateMachine =
         elevator {
             name = elevatorIdentifier
-            initialState = ElevatorState.ON.name
+            initialState = ElevatorState.OFF.name
             state {
                 name = ElevatorState.ON.name
                 onEnter = { println("Initializing Elevator.....") }
@@ -94,13 +92,39 @@ class Elevator(val elevatorIdentifier: String) {
     private fun sleep() {}
     private fun waitForFloorSelection() {}
     private fun emergencyStop() {}
-    fun pressButton() {
-        stateMachine.processEvent(StateProcessContext(Event(ElevatorEvents.FLOOR_SELECTED), mutableMapOf()))
-    }
+
+    fun createNewInstance(instanceName: String): StateProcessContext = stateMachine.initializeNewInstance(instanceName)
+
+    fun turnOn(stateProcessContext: StateProcessContext): StateProcessContext =
+        stateMachine.processEvent(Event(ElevatorEvents.TURN_ON), stateProcessContext)
+
+    fun pressButton(stateProcessContext: StateProcessContext): StateProcessContext =
+        stateMachine.processEvent(Event(ElevatorEvents.FLOOR_SELECTED), stateProcessContext)
+}
+
+private enum class ElevatorState {
+    ON,
+    MOVING,
+    STOPPED,
+    POWER_SAVING,
+    OFF;
+}
+
+private enum class ElevatorEvents {
+    TURN_ON,
+    TURN_OFF,
+    FLOOR_SELECTED,
+    WAITING,
+    POWER_SAVE,
+    EMERGENCY_STOP
 }
 
 fun main(args: Array<String>) {
-    val elevator = Elevator("TestElevator")
-    elevator.pressButton()
+    val elevator = Elevator("Elevator")
+    var e1Instance = elevator.createNewInstance("E1")
+    var e2Instance = elevator.createNewInstance("E2")
+    e1Instance = elevator.turnOn(e1Instance)
+//    e2Instance = elevator.pressButton(e2Instance)
+    e1Instance = elevator.pressButton(e1Instance)
     println()
 }

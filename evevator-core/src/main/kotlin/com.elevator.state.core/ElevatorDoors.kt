@@ -1,7 +1,5 @@
 package com.elevator.state.core
 
-import com.elevator.state.ElevatorDoorsStateMachine.ElevatorDoorEvent
-import com.elevator.state.ElevatorDoorsStateMachine.ElevatorDoorState
 import com.elevator.state.builder.elevatorDoors
 
 class ElevatorDoors(private val elevator: Elevator) {
@@ -56,4 +54,17 @@ class ElevatorDoors(private val elevator: Elevator) {
     private fun open() {}
     private fun jammed() {}
     private fun fixJam() {}
+}
+
+private enum class ElevatorDoorState(name: String) {
+    OPEN("Open"),
+    CLOSED("Closed"),
+    JAMMED("JAMMED")
+}
+
+private enum class ElevatorDoorEvent(name: String) {
+    OPEN_EVENT("opening"),
+    CLOSE_EVENT("closing"),
+    JAMMED_EVENT("jamming"),
+    FIXED_EVENT("fixing")
 }

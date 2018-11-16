@@ -1,3 +1,7 @@
 package com.elevator.state
 
-data class StateProcessContext(var event: Event, val contextParameters: Map<Any, Any>)
+data class StateProcessContext internal constructor(
+    val instanceName: String,
+    val state: State,
+    val contextParameters: Map<Any, Any>
+)
