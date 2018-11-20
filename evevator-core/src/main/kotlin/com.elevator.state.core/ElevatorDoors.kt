@@ -48,7 +48,7 @@ class ElevatorDoors(private val elevator: Elevator) {
                 toState = ElevatorDoorState.JAMMED.name
                 handler = { elevatorDoors.jammed() }
             }
-        }.build()
+        }.create()
 
     private fun close() {}
     private fun open() {}

@@ -17,7 +17,7 @@ abstract class StateMachineBuilder : Builder {
         IRModelToStateMachineTransformer() as Transformer<Any, Any>
     )
 
-    override fun build(): StateMachine {
+    override fun create(): StateMachine {
         return transform(this) as StateMachine
     }
 

@@ -80,7 +80,7 @@ class Elevator(val elevatorIdentifier: String) {
                 event = ElevatorEvents.EMERGENCY_STOP
                 handler = { elevator.emergencyStop() }
             }
-        }.build()
+        }.create()
 
     private fun floorSelected() {
         println("Floor Selected")
@@ -124,7 +124,8 @@ fun main(args: Array<String>) {
     var e1Instance = elevator.createNewInstance("E1")
     var e2Instance = elevator.createNewInstance("E2")
     e1Instance = elevator.turnOn(e1Instance)
-//    e2Instance = elevator.pressButton(e2Instance)
+    e2Instance = elevator.pressButton(e2Instance)
+    println(e2Instance)
     e1Instance = elevator.pressButton(e1Instance)
     println()
 }

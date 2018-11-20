@@ -1,5 +1,7 @@
 package com.elevator.state
 
+import io.vavr.control.Either
+
 data class State(
     val name: String,
     val onEnter: () -> Unit,
@@ -11,14 +13,15 @@ data class State(
 
     override fun equals(other: Any?) = other is State && other.name == name
 
-    fun processEvent(event: Event, context: StateProcessContext): StateProcessContext {
+    fun processEvent(event: Event, context: StateProcessContext): Either<StateProcessContext, Failure> {
         val transition = availableActions[event]
-        transition?.handler?.invoke()
-            ?: throw IllegalArgumentException("event $event is not supported by state $name")
-        return context.copy(
-            contextParameters = context.contextParameters,
-            state = transition.toState
-        )
+        return transition?.handler
+            ?.run {
+                invoke()
+                return Either.left(
+                    context.copy(contextParameters = context.contextParameters, state = transition.toState)
+                )
+            }
+            ?: run { return Either.right(Failure(IllegalArgumentException("event $event is not supported by state $name"))) }
     }
 }
-
