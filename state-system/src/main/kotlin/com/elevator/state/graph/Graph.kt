@@ -1,6 +1,7 @@
 package com.elevator.state.graph
 
 import com.elevator.state.Event
+import com.elevator.state.StateProcessContext
 import com.elevator.state.transformers.IRModel
 
 data class Graph(val name: String) : IRModel {
@@ -19,7 +20,7 @@ data class Node(val name: String, val onEnter: () -> Unit, val onExit: () -> Uni
     }
 }
 
-data class Edge(val event: Event, val sideEffect: () -> Unit) : IRModel {
+data class Edge(val event: Event, val sideEffect: suspend (StateProcessContext) -> StateProcessContext) : IRModel {
     lateinit var toNode: Node
 
     fun addToNode(toNode: Node) {

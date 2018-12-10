@@ -1,11 +1,13 @@
 package com.elevator.state.builder
 
+import com.elevator.state.StateProcessContext
+
 @StateMachineDSL
 class TransitionBuilder : Builder {
     lateinit var fromStates: List<String>
     lateinit var toState: String
     lateinit var event: Any
-    lateinit var handler: () -> Unit
+    lateinit var handler: suspend (StateProcessContext) -> StateProcessContext
 
     override fun validate() {
         if (!this::fromStates.isInitialized) {
@@ -18,7 +20,7 @@ class TransitionBuilder : Builder {
             throw IllegalArgumentException("No event defined for transition}")
         }
         if (!this::handler.isInitialized) {
-            handler = {}
+            handler = { stateProcessContext -> stateProcessContext }
         }
     }
 }

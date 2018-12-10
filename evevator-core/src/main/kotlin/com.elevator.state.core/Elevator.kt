@@ -1,15 +1,26 @@
 package com.elevator.state.core
 
 import com.elevator.state.Event
+import com.elevator.state.Failure
 import com.elevator.state.StateMachine
 import com.elevator.state.StateProcessContext
 import com.elevator.state.builder.elevator
+import io.vavr.control.Either
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 
-class Elevator(val elevatorIdentifier: String) {
+open class Elevator(private val elevatorIdentifier: String) {
+    protected val stateMachine: StateMachine
+    private val elevatorDoors: ElevatorDoors
+    private val controlPanel: ControlPanel
 
-    private val stateMachine: StateMachine = initializeElevatorStateMachine(this)
-    private val elevatorDoors: ElevatorDoors = ElevatorDoors(this)
-    private val controlPanel: ControlPanel = ControlPanel(this)
+    init {
+        stateMachine = initializeElevatorStateMachine(this)
+        elevatorDoors = ElevatorDoors(this)
+        controlPanel = ControlPanel(this)
+    }
+
+    fun createNewInstance(instanceName: String): StateProcessContext = stateMachine.initializeNewInstance(instanceName)
 
     private fun initializeElevatorStateMachine(elevator: Elevator): StateMachine =
         elevator {
@@ -43,31 +54,31 @@ class Elevator(val elevatorIdentifier: String) {
                 fromStates = listOf(ElevatorState.ON.name, ElevatorState.STOPPED.name, ElevatorState.POWER_SAVING.name)
                 toState = ElevatorState.MOVING.name
                 event = ElevatorEvents.FLOOR_SELECTED
-                handler = { elevator.floorSelected() }
+                handler = { stateProcessContext -> elevator.floorSelected(stateProcessContext) }
             }
             transition {
                 fromStates = listOf(ElevatorState.ON.name, ElevatorState.MOVING.name)
                 toState = ElevatorState.STOPPED.name
                 event = ElevatorEvents.WAITING
-                handler = { elevator.waitForFloorSelection() }
+                handler = { stateProcessContext -> elevator.waitForFloorSelection(stateProcessContext) }
             }
             transition {
                 fromStates = listOf(ElevatorState.STOPPED.name)
                 toState = ElevatorState.POWER_SAVING.name
                 event = ElevatorEvents.POWER_SAVE
-                handler = { elevator.sleep() }
+                handler = { stateProcessContext -> elevator.sleep(stateProcessContext) }
             }
             transition {
                 fromStates = listOf(ElevatorState.ON.name, ElevatorState.STOPPED.name, ElevatorState.POWER_SAVING.name)
                 toState = ElevatorState.OFF.name
                 event = ElevatorEvents.TURN_OFF
-                handler = { elevator.turnOff() }
+                handler = { stateProcessContext -> elevator.turnOff(stateProcessContext) }
             }
             transition {
                 fromStates = listOf(ElevatorState.OFF.name)
                 toState = ElevatorState.ON.name
                 event = ElevatorEvents.TURN_ON
-                handler = { elevator.turnOn() }
+                handler = { stateProcessContext -> elevator.turnOn(stateProcessContext) }
             }
             transition {
                 fromStates = listOf(
@@ -78,28 +89,47 @@ class Elevator(val elevatorIdentifier: String) {
                 )
                 toState = ElevatorState.STOPPED.name
                 event = ElevatorEvents.EMERGENCY_STOP
-                handler = { elevator.emergencyStop() }
+                handler = { stateProcessContext -> elevator.emergencyStop(stateProcessContext) }
             }
         }.create()
 
-    private fun floorSelected() {
-        println("Floor Selected")
-        Thread.sleep(2000)
+    private suspend fun floorSelected(stateProcessContext: StateProcessContext): StateProcessContext {
+        delay(2000L)
+        return stateProcessContext
     }
 
-    private fun turnOff() {}
-    private fun turnOn() {}
-    private fun sleep() {}
-    private fun waitForFloorSelection() {}
-    private fun emergencyStop() {}
+    private suspend fun turnOff(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
+    private suspend fun turnOn(stateProcessContext: StateProcessContext): StateProcessContext {
+        return stateProcessContext
+    }
 
-    fun createNewInstance(instanceName: String): StateProcessContext = stateMachine.initializeNewInstance(instanceName)
+    private suspend fun sleep(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
+    private suspend fun waitForFloorSelection(stateProcessContext: StateProcessContext): StateProcessContext =
+        stateProcessContext
 
-    fun turnOn(stateProcessContext: StateProcessContext): StateProcessContext =
-        stateMachine.processEvent(Event(ElevatorEvents.TURN_ON), stateProcessContext)
+    private suspend fun emergencyStop(stateProcessContext: StateProcessContext): StateProcessContext =
+        stateProcessContext
 
-    fun pressButton(stateProcessContext: StateProcessContext): StateProcessContext =
-        stateMachine.processEvent(Event(ElevatorEvents.FLOOR_SELECTED), stateProcessContext)
+    private fun processCommandResult(commandResult: CommandResult): StateProcessContext {
+        val result = commandResult.result
+        return when (result) {
+            is Either.Left -> result.left
+            is Either.Right -> fail(result.get().exception)
+            else -> fail(IllegalArgumentException("There are only two options in an either"))
+        }
+    }
+
+    protected fun fail(exception: Exception): Nothing = throw exception
+
+    private suspend fun processCommand(elevatorCommand: ElevatorCommand): Either<StateProcessContext, Failure> {
+        return stateMachine.processEvent(elevatorCommand.event, elevatorCommand.stateProcessContext)
+    }
+
+    suspend fun processEvent(event: ElevatorEvents, stateProcessContext: StateProcessContext): StateProcessContext {
+        val result = processCommand(ElevatorCommand(Event(event), stateProcessContext))
+        return processCommandResult(CommandResult(result))
+    }
+
 }
 
 private enum class ElevatorState {
@@ -110,7 +140,7 @@ private enum class ElevatorState {
     OFF;
 }
 
-private enum class ElevatorEvents {
+enum class ElevatorEvents {
     TURN_ON,
     TURN_OFF,
     FLOOR_SELECTED,
@@ -119,13 +149,11 @@ private enum class ElevatorEvents {
     EMERGENCY_STOP
 }
 
-fun main(args: Array<String>) {
-    val elevator = Elevator("Elevator")
-    var e1Instance = elevator.createNewInstance("E1")
-    var e2Instance = elevator.createNewInstance("E2")
-    e1Instance = elevator.turnOn(e1Instance)
-    e2Instance = elevator.pressButton(e2Instance)
-    println(e2Instance)
-    e1Instance = elevator.pressButton(e1Instance)
-    println()
+
+fun main(args: Array<String>) = runBlocking<Unit> {
+    ArbitraryRunner(Elevator("Elevator")).runElevators()
 }
+
+data class CommandResult(val result: Either<StateProcessContext, Failure>)
+
+data class ElevatorCommand(val event: Event, val stateProcessContext: StateProcessContext)
