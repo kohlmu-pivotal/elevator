@@ -98,21 +98,16 @@ open class Elevator(private val elevatorIdentifier: String) {
         return stateProcessContext
     }
 
-    private suspend fun turnOff(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
-    private suspend fun turnOn(stateProcessContext: StateProcessContext): StateProcessContext {
-        return stateProcessContext
-    }
+    private fun turnOff(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
+    private fun turnOn(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
 
-    private suspend fun sleep(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
-    private suspend fun waitForFloorSelection(stateProcessContext: StateProcessContext): StateProcessContext =
-        stateProcessContext
+    private fun sleep(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
+    private fun waitForFloorSelection(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
 
-    private suspend fun emergencyStop(stateProcessContext: StateProcessContext): StateProcessContext =
-        stateProcessContext
+    private fun emergencyStop(stateProcessContext: StateProcessContext): StateProcessContext = stateProcessContext
 
     private fun processCommandResult(commandResult: CommandResult): StateProcessContext {
-        val result = commandResult.result
-        return when (result) {
+        return when (val result = commandResult.result) {
             is Either.Left -> result.left
             is Either.Right -> fail(result.get().exception)
             else -> fail(IllegalArgumentException("There are only two options in an either"))
@@ -150,7 +145,7 @@ enum class ElevatorEvents {
 }
 
 
-fun main(args: Array<String>) = runBlocking<Unit> {
+fun main() = runBlocking {
     ArbitraryRunner(Elevator("Elevator")).runElevators()
 }
 

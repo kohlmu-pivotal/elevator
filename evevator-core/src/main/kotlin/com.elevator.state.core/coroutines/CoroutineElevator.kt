@@ -18,9 +18,8 @@ class CoroutineElevator(elevatorIdentifier: String) : Elevator(elevatorIdentifie
     private val job = Job()
 
     private val commandProcessActor = actor<ElevatorCommand>(coroutineContext) {
-        val actorContext = newFixedThreadPoolContext(10, "Actor")
         for (elevatorCommand in channel) {
-            launch(coroutineContext + actorContext) {
+            launch(coroutineContext) {
                 val eventResult =
                     stateMachine.processEvent(elevatorCommand.event, elevatorCommand.stateProcessContext)
                 resultChannel.send(CommandResult(eventResult))
@@ -47,9 +46,8 @@ class CoroutineElevator(elevatorIdentifier: String) : Elevator(elevatorIdentifie
     }
 
 
-    private suspend fun processCommandResult(commandResult: CommandResult): StateProcessContext {
-        val result = commandResult.result
-        return when (result) {
+    private fun processCommandResult(commandResult: CommandResult): StateProcessContext {
+        return when (val result = commandResult.result) {
             is Either.Left -> result.left
             is Either.Right -> fail(result.get().exception)
             else -> fail(IllegalArgumentException("There are only two options in an either"))
@@ -57,6 +55,4 @@ class CoroutineElevator(elevatorIdentifier: String) : Elevator(elevatorIdentifie
     }
 }
 
-fun main(args: Array<String>) = runBlocking<Unit> {
-    runBlocking { ArbitraryCoroutineRunner(CoroutineElevator("Elevator")).runElevators() }
-}
+fun main() = runBlocking { ArbitraryCoroutineRunner(CoroutineElevator("Elevator")).runElevators() }

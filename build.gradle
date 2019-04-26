@@ -1,12 +1,12 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.3.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.30'
 }
 
 group 'com.example.state'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 
 repositories {
     maven { url 'http://dl.bintray.com/kotlin/kotlin-eap' }
@@ -19,12 +19,12 @@ dependencies {
 }
 
 compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
     kotlinOptions.apiVersion = "1.3"
     kotlinOptions.languageVersion = "1.3"
 }
 compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
     kotlinOptions.apiVersion = "1.3"
     kotlinOptions.languageVersion = "1.3"
 }
