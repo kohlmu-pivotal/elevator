@@ -12,4 +12,5 @@ rootProject.name = 'elevator'
 include "state-system"
 include "elevator-statemachine"
 include 'evevator-core'
+include 'testing-simulation'
 

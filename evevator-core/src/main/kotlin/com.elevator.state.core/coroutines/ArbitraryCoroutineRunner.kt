@@ -4,9 +4,12 @@ import com.elevator.state.core.ElevatorEvents
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.newFixedThreadPoolContext
 
 class ArbitraryCoroutineRunner(private val elevator: CoroutineElevator) {
     suspend fun runElevators() {
+        val mainThreadContext = newFixedThreadPoolContext(5, "MainThreadContext")
+
         val instances = measureTime("Instance creation") {
             (0..1000000).map { index ->
                 elevator.createNewInstance("E$index")
@@ -15,9 +18,8 @@ class ArbitraryCoroutineRunner(private val elevator: CoroutineElevator) {
 
         val turnOnResults = measureTime("Turn On") {
             instances.map { instance ->
-                GlobalScope.async {
+                GlobalScope.async(mainThreadContext) {
                     elevator.processCoroutineEvent(ElevatorEvents.TURN_ON, instance)
-
                 }
             }
         }
@@ -29,7 +31,7 @@ class ArbitraryCoroutineRunner(private val elevator: CoroutineElevator) {
         measureTime("Floor Selected")
         {
             awaitMap.map { stateProcessContext ->
-                GlobalScope.async {
+                GlobalScope.async(mainThreadContext) {
                     elevator.processCoroutineEvent(ElevatorEvents.FLOOR_SELECTED, stateProcessContext)
                 }
 
