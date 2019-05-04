@@ -7,46 +7,49 @@ import com.elevator.state.core.Elevator
 import com.elevator.state.core.ElevatorCommand
 import com.elevator.state.core.ElevatorEvents
 import io.vavr.control.Either
+import kotlinx.atomicfu.AtomicInt
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.channels.*
 import kotlin.coroutines.CoroutineContext
 
 class CoroutineElevator(elevatorIdentifier: String) : Elevator(elevatorIdentifier), CoroutineScope {
 
-    private val resultChannel = Channel<CommandResult>(Channel.RENDEZVOUS)
+    private val resultChannel = Channel<CommandResult>(Channel.UNLIMITED)
+
     private val job = Job()
 
-    private val commandProcessActor = actor<ElevatorCommand>(coroutineContext) {
-        for (elevatorCommand in channel) {
-            launch(coroutineContext) {
-                val eventResult =
-                    stateMachine.processEvent(elevatorCommand.event, elevatorCommand.stateProcessContext)
-                resultChannel.send(CommandResult(eventResult))
-            }
+    private fun commandProcessActor() = produce<ElevatorCommand>(coroutineContext) {
+        consumeEach { elevatorCommand ->
+            val eventResult =
+                stateMachine.processEvent(elevatorCommand.event, elevatorCommand.stateProcessContext)
+            resultChannel.send(CommandResult(eventResult))
         }
     }
+
 
     override val coroutineContext: CoroutineContext
         get() = job + newFixedThreadPoolContext(5, "RootCoroutineContext")
 
     fun close() {
-        commandProcessActor.close()
+        coroutineContext.cancelChildren()
         job.cancel()
     }
 
-    suspend fun processCoroutineEvent(
+    fun processCoroutineEvent(
         event: ElevatorEvents,
         stateProcessContext: StateProcessContext
-    ): StateProcessContext = submitElevatorCommandForProcessing(ElevatorCommand(Event(event), stateProcessContext))
+    ): StateProcessContext =
+        runBlocking {
+            submitElevatorCommandForProcessing(ElevatorCommand(Event(event), stateProcessContext))
+        }
 
     private suspend fun submitElevatorCommandForProcessing(elevatorCommand: ElevatorCommand): StateProcessContext {
-        commandProcessActor.send(elevatorCommand)
+        workerPool[0].send(elevatorCommand)
         return processCommandResult(resultChannel.receive())
     }
 
-
-    private fun processCommandResult(commandResult: CommandResult): StateProcessContext {
+    private suspend fun processCommandResult(commandResult: CommandResult): StateProcessContext {
         return when (val result = commandResult.result) {
             is Either.Left -> result.left
             is Either.Right -> fail(result.get().exception)

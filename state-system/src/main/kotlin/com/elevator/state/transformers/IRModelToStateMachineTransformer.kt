@@ -60,7 +60,7 @@ class IRModelToStateMachineTransformer : Transformer<IRModel, Any> {
             }.toList()
         val transitionMap = mutableMapOf<Event, Transition>()
         transitions.associateByTo(transitionMap) { it.event }
-        return state.copy(availableActions = transitionMap.toMap())
+        return state.copy(availableTransitions = transitionMap.toMap())
     }
 
 }

@@ -20,7 +20,7 @@ open class Elevator(private val elevatorIdentifier: String) {
         controlPanel = ControlPanel(this)
     }
 
-    suspend fun createNewInstance(instanceName: String): StateProcessContext = stateMachine.initializeNewInstance(instanceName)
+    fun createNewInstance(instanceName: String): StateProcessContext = stateMachine.initializeNewInstance(instanceName)
 
     private fun initializeElevatorStateMachine(elevator: Elevator): StateMachine =
         elevator {

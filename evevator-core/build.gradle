@@ -18,6 +18,8 @@ dependencies {
     api(project(":state-system"))
     implementation(project(":elevator-statemachine"))
     testImplementation group: 'junit', name: 'junit', version: '4.12'
+    compile group: 'tech.pronghorn', name: 'common', version: '0.1.1'
+
 }
 
 compileKotlin {
