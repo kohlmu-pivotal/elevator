@@ -7,47 +7,46 @@ import com.elevator.state.core.Elevator
 import com.elevator.state.core.ElevatorCommand
 import com.elevator.state.core.ElevatorEvents
 import io.vavr.control.Either
-import kotlinx.atomicfu.AtomicInt
-import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.channels.produce
 import kotlin.coroutines.CoroutineContext
 
 class CoroutineElevator(elevatorIdentifier: String) : Elevator(elevatorIdentifier), CoroutineScope {
 
-    private val resultChannel = Channel<CommandResult>(Channel.UNLIMITED)
-
     private val job = Job()
 
-    private fun commandProcessActor() = produce<ElevatorCommand>(coroutineContext) {
-        consumeEach { elevatorCommand ->
-            val eventResult =
-                stateMachine.processEvent(elevatorCommand.event, elevatorCommand.stateProcessContext)
-            resultChannel.send(CommandResult(eventResult))
-        }
+    private suspend fun commandProcessProducer(elevatorCommand: ElevatorCommand) =
+        CommandResult(stateMachine.processEvent(elevatorCommand.event, elevatorCommand.stateProcessContext))
+
+
+    override val coroutineContext: CoroutineContext by lazy {
+        job + newFixedThreadPoolContext(
+            5,
+            "RootCoroutineContext"
+        )
     }
-
-
-    override val coroutineContext: CoroutineContext
-        get() = job + newFixedThreadPoolContext(5, "RootCoroutineContext")
 
     fun close() {
         coroutineContext.cancelChildren()
         job.cancel()
     }
 
-    fun processCoroutineEvent(
+
+    fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
+
+    suspend fun processCoroutineEvent(
         event: ElevatorEvents,
         stateProcessContext: StateProcessContext
-    ): StateProcessContext =
-        runBlocking {
-            submitElevatorCommandForProcessing(ElevatorCommand(Event(event), stateProcessContext))
-        }
-
-    private suspend fun submitElevatorCommandForProcessing(elevatorCommand: ElevatorCommand): StateProcessContext {
-        workerPool[0].send(elevatorCommand)
-        return processCommandResult(resultChannel.receive())
+    ): StateProcessContext {
+        log("Running event ${event.name}")
+        val result = submitElevatorCommandForProcessing(ElevatorCommand(Event(event), stateProcessContext))
+        log("Completed Event ${event.name}")
+        return result
     }
+
+    private suspend fun submitElevatorCommandForProcessing(elevatorCommand: ElevatorCommand): StateProcessContext =
+        processCommandResult(commandProcessProducer(elevatorCommand))
+
 
     private suspend fun processCommandResult(commandResult: CommandResult): StateProcessContext {
         return when (val result = commandResult.result) {
